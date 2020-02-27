@@ -4,18 +4,31 @@ admin.initializeApp(functions.config().firebase);
 
 exports.sendNotifications = functions.database.ref('/notifications/{notificationId}').onWrite((event) => {
 
+    console.info("event.data")
+    console.info(event)
   // Exit if data already created
-  if (event.data.previous.val()) {
-    return;
-  }
+//   if (event.data.previous.val()) {
+//     return;
+//   }
 
   // Exit when the data is deleted
-  if (!event.data.exists()) {
-    return;
-  }
+//   if (!event.data.exists()) {
+//     return;
+//   }
+
+
+      // Only edit data when it is first created.
+      if (event.before.exists()) {
+        return null;
+      }
+      // Exit when the data is deleted.
+      if (!event.after.exists()) {
+        return null;
+      }
 
   // Setup notification
-  const NOTIFICATION_SNAPSHOT = event.data;
+//   const NOTIFICATION_SNAPSHOT = event.data;
+  const NOTIFICATION_SNAPSHOT = event.after.val();;
   const payload = {
     notification: {
       title: `New Message from ${NOTIFICATION_SNAPSHOT.val().user}!`,
