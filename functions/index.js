@@ -28,18 +28,29 @@ exports.sendNotifications = functions.database.ref('/notifications/{notification
 
   // Setup notification
 //   const NOTIFICATION_SNAPSHOT = event.data;
-  const NOTIFICATION_SNAPSHOT = event.after.val();;
+  const NOTIFICATION_SNAPSHOT = event.after;
   const payload = {
     notification: {
       title: `New Message from ${NOTIFICATION_SNAPSHOT.val().user}!`,
       body: NOTIFICATION_SNAPSHOT.val().message,
       icon: NOTIFICATION_SNAPSHOT.val().userProfileImg,
-      click_action: `https://${functions.config().firebase.authDomain}`
+      click_action: `https://aaaaaa.com`// `https://${functions.config().firebase.authDomain}`
     }
   }
 
+  console.log("payload--------------------------------------")
+  console.log(payload)
+
   // Clean invalid tokens
   function cleanInvalidTokens(tokensWithKey, results) {
+
+    console.log("cleanInvalidTokens============================")
+    console.log("tokensWithKey++++++++++++++++++++++++++++++++")
+    console.log(tokensWithKey)
+    console.log("results------++++++++++++++++++++++++++++++++")
+    console.log(results)
+    // return
+    //------------------------------- debug stop here --------------------------
 
     const invalidTokens = [];
 
@@ -78,10 +89,38 @@ exports.sendNotifications = functions.database.ref('/notifications/{notification
       });
     }
 
+    console.log("tokens--------------------------------------")
+    console.log(tokens)
+  
+
     return admin.messaging().sendToDevice(tokens, payload)
-      .then((response) => cleanInvalidTokens(tokensWithKey, response.results))
-      .then(() => admin.database().ref('/notifications').child(NOTIFICATION_SNAPSHOT.key).remove())
+        .then((response) => {
+            console.log("sendToDevice response ********************************************************************")
+            console.log(response)
+            cleanInvalidTokens(tokensWithKey, response.results)
+        })
+        .then(() => {
+            admin.database().ref('/notifications').child(NOTIFICATION_SNAPSHOT.key).remove()
+            console.log("DONEDONE-------------------------------")  
+        })
+        .catch((err) =>{
+                console.error("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRRRRRRRRRRr")
+                console.error(err)
+        })
   });
 
 
 });
+
+
+// Handle incoming messages. Called when:
+  // - a message is received while the app has focus
+  // - the user clicks on an app notification created by a service worker
+  //   `messaging.setBackgroundMessageHandler` handler.
+  messaging.onMessage((payload) => {
+    console.log('Message received. ', payload);
+    // [START_EXCLUDE]
+    // Update the UI to include the received message.
+    // appendMessage(payload);
+    // [END_EXCLUDE]
+  });
